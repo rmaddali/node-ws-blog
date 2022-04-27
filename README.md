@@ -8,12 +8,15 @@ export CLUSTER_NAME=eks-websockets-test-env <br />
 export ECR_REPO=node-ws <br />
 export NAMESPACE=node-ws <br />
 
-Create EKS Cluster 
+<b>Create EKS Cluster </b>
 
-ksctl create cluster \  <br />
+kubectl create cluster \  <br />
   --name $CLUSTER_NAME \
   --region $AWS_REGION \
   --managed
+  
+  
+  
 
 
 
