@@ -1,0 +1,11 @@
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualService
+metadata:
+  name: mesh-node-ws
+  namespace: mesh-node-ws
+spec:
+  awsName: mesh-node-ws.mesh-node-ws.svc.cluster.local
+  provider:
+    virtualRouter:
+      virtualRouterRef:
+        name: mesh-node-ws

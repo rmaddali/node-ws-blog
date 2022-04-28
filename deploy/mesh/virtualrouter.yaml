@@ -1,0 +1,25 @@
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualRouter
+metadata:
+  namespace: mesh-node-ws
+  name: mesh-node-ws
+spec:
+  listeners:
+    - portMapping:
+        port: 80
+        protocol: http
+  routes:
+    - name: mesh-node-ws-route1
+      priority: 100
+      httpRoute:
+        match:
+          prefix: *
+        action:
+          weightedTargets:
+            - virtualNodeRef:
+                name: mesh-node-ws
+              weight: 1
+        timeout:
+          perRequest:
+           - value: 10
+             unit: s

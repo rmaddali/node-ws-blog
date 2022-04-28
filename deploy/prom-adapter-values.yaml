@@ -1,0 +1,19 @@
+prometheus:
+  url: http://prometheus-server.prometheus.svc
+  port: 80
+
+rules:
+  custom:
+    - seriesQuery: '{__name__=~"^myapp_websockets_connections$"}'
+      resources:
+        overrides:
+          kubernetes_namespace:
+            resource: namespace
+          kubernetes_pod_name:
+            resource: pod
+      name:
+        matches: "^(.*)"
+        as: "${1}_avg"
+      metricsQuery: (avg(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>))
+      
+      

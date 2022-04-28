@@ -1,0 +1,12 @@
+kind: ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: node-ws
+  labels:
+    app: node-ws
+spec:
+  selector:
+    matchLabels:
+      app: node-ws
+  endpoints:
+  - port: http

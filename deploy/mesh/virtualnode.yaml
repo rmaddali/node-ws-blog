@@ -1,0 +1,23 @@
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualNode
+metadata:
+  name: mesh-node-ws
+  namespace: mesh-node-ws
+spec:
+  podSelector:
+    matchLabels:
+      app: mesh-node-ws
+  listeners:
+    - portMapping:
+        port: 80
+        protocol: http
+      healthCheck:
+        protocol: http
+        path: '/ping'
+        healthyThreshold: 2
+        unhealthyThreshold: 2
+        timeoutMillis: 2000
+        intervalMillis: 5000
+  serviceDiscovery:
+    dns:
+      hostname: mesh-node-ws.mesh-node-ws.svc.cluster.local
