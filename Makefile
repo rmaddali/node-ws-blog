@@ -1,11 +1,9 @@
 #!/bin/bash
 
 IMAGE_REPO ?= ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-IMAGE_NAME ?= ${ECR_REPO}
+IMAGE_NAME ?= hello47
 IMAGE_TAG ?= latest
-ECR_REPO_URI ?= aws ecr describe-repositories --repository-name ${IMAGE_NAME}  | jq -r '.repositories[0].repositoryUri'
-
-
+AWS_CLI ?= aws
 PWD := $(shell pwd)
 BASE_DIR := $(shell basename $(PWD))
 
@@ -43,17 +41,18 @@ all: image
 image: create-repo build-image push-image
 
 create-repo:
-	@echo " Creating ECR image repo: ${IMAGE_REPO}"
-	@echo "$(ECR_REPO_URI) already exist..."
-	if [ -z "$(ECR_REPO_URI)" ]; then \
+	@echo " Checking ECR image repo if exists: ${IMAGE_NAME}" 
+	ECR_REPO_URI=$$(aws ecr describe-repositories --repository-name ${IMAGE_NAME} | jq -r '.repositories[0].repositoryUri'); \
+	if [ -z "$$ECR_REPO_URI" ]; then \
 		 aws ecr create-repository \
         --repository-name $(IMAGE_NAME) \
         --region $(AWS_REGION) \
         --query 'repository.repositoryUri' \
         --output text; \
-      echo "created image repo ECR_REPO_URI=$(ECR_REPO_URI)"; \
+	  ECR_REPO_URI=$$(aws ecr describe-repositories --repository-name ${IMAGE_NAME} | jq -r '.repositories[0].repositoryUri'); \
+      echo "created image repo ECR_REPO_URI=$$ECR_REPO_URI"; \
 	else \
-		echo "Not empty"; \
+		echo "Image repo already exists"; \
 	fi
 build-image: 
 	@echo "Building the docker image: $(IMAGE_NAME):$(IMAGE_TAG)..."
