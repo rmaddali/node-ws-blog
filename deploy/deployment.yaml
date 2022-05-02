@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: mesh-node-ws
-  name: mesh-node-ws
+  namespace: node-ws
+  name: node-ws
 spec:
   selector:
     matchLabels:
-      app: mesh-node-ws
+      app: node-ws
   replicas: 2
   template:
     metadata:
@@ -15,12 +15,12 @@ spec:
         prometheus.io/port: '80'
         prometheus.io/path: '/metrics'
       labels:
-        app: mesh-node-ws
+        app: node-ws
     spec:
       containers:
-      - image: rammaddali/node-ws:latest
+      - image: 293014077452.dkr.ecr.us-west-1.amazonaws.com/node-ws:latest
         imagePullPolicy: Always
-        name: mesh-node-ws
+        name: node-ws
         ports:
          - name: socket-port
            containerPort: 80

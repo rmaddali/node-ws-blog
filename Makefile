@@ -1,7 +1,7 @@
 #!/bin/bash
 
 IMAGE_REPO ?= ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-IMAGE_NAME ?= hello47
+IMAGE_NAME ?= node-ws
 IMAGE_TAG ?= latest
 AWS_CLI ?= aws
 PWD := $(shell pwd)

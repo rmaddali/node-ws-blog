@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: node-ws
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: node-ws
+  name: node-ws
+spec:
+  selector:
+    matchLabels:
+      app: node-ws
+  replicas: 2
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '80'
+        prometheus.io/path: '/metrics'
+      labels:
+        app: node-ws
+    spec:
+      containers:
+      - image: {{IMAGE_REPO}}/node-ws:latest
+        imagePullPolicy: Always
+        name: node-ws
+        ports:
+         - name: socket-port
+           containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-ws-service
+  namespace: node-ws
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  selector:
+    app: node-ws
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: LoadBalancer
