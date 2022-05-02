@@ -3,6 +3,7 @@
 IMAGE_REPO ?= ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 IMAGE_NAME ?= ${ECR_REPO}
 IMAGE_TAG ?= latest
+ECR_REPO_URI ?= aws ecr describe-repositories --repository-name ${IMAGE_NAME}  | jq -r '.repositories[0].repositoryUri'
 
 
 PWD := $(shell pwd)
@@ -35,13 +36,25 @@ all: image
 
 
 
-
 ############################################################
 # image section
 ############################################################
 
-image: build-image push-image
+image: create-repo build-image push-image
 
+create-repo:
+	@echo " Creating ECR image repo: ${IMAGE_REPO}"
+	@echo "$(ECR_REPO_URI) already exist..."
+	if [ -z "$(ECR_REPO_URI)" ]; then \
+		 aws ecr create-repository \
+        --repository-name $(IMAGE_NAME) \
+        --region $(AWS_REGION) \
+        --query 'repository.repositoryUri' \
+        --output text; \
+      echo "created image repo ECR_REPO_URI=$(ECR_REPO_URI)"; \
+	else \
+		echo "Not empty"; \
+	fi
 build-image: 
 	@echo "Building the docker image: $(IMAGE_NAME):$(IMAGE_TAG)..."
 	@docker build --no-cache -t  $(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_TAG) .
