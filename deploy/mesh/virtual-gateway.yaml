@@ -1,8 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-gw
+  namespace: mesh-node-ws-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ingress-gw
+  template:
+    metadata:
+      labels:
+        app: ingress-gw
+    spec:
+      containers:
+        - name: envoy
+          image: 840364872350.dkr.ecr.$AWS_REGION.amazonaws.com/aws-appmesh-envoy:v1.16.1.1-prod
+          ports:
+            - containerPort: 8088
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-gw
+  namespace: mesh-node-ws-ns
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8088
+      name: http
+  selector:
+    app: ingress-gw
+---
 apiVersion: appmesh.k8s.aws/v1beta2
 kind: VirtualGateway
 metadata:
   name: ingress-gw
-  namespace: mesh-node-ws
+  namespace: mesh-node-ws-ns
 spec:
   namespaceSelector:
     matchLabels:
@@ -18,3 +57,113 @@ spec:
     accessLog:
       file:
         path: /dev/stdout
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: GatewayRoute
+metadata:
+  name: gateway-route-paths
+  namespace: mesh-node-ws-ns
+spec:
+  httpRoute:
+    match:
+      prefix: "/"
+    action:
+      target:
+        virtualService:
+          virtualServiceRef:
+            name: node-ws
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualRouter
+metadata:
+  namespace: mesh-node-ws-ns
+  name: mesh-node-ws
+spec:
+  listeners:
+    - portMapping:
+        port: 80
+        protocol: http
+  routes:
+    - name: mesh-node-ws-route1
+      priority: 100
+      httpRoute:
+        match:
+          prefix: *
+        action:
+          weightedTargets:
+            - virtualNodeRef:
+                name: mesh-node-ws
+              weight: 1
+        timeout:
+          perRequest:
+           - value: 10
+             unit: s
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualService
+metadata:
+  name: mesh-node-ws
+  namespace: mesh-node-ws-ns
+spec:
+  awsName: mesh-node-ws.mesh-node-ws.svc.cluster.local
+  provider:
+    virtualRouter:
+      virtualRouterRef:
+        name: mesh-node-ws
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualNode
+metadata:
+  name: mesh-node-ws
+  namespace: mesh-node-ws-ns
+spec:
+  podSelector:
+    matchLabels:
+      app: mesh-node-ws
+  listeners:
+    - portMapping:
+        port: 80
+        protocol: http
+      healthCheck:
+        protocol: http
+        path: '/ping'
+        healthyThreshold: 2
+        unhealthyThreshold: 2
+        timeoutMillis: 2000
+        intervalMillis: 5000
+  serviceDiscovery:
+    dns:
+      hostname: mesh-node-ws.mesh-node-ws.svc.cluster.local
+---
+piVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mesh-node-ws
+  namespace: mesh-node-ws-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mesh-node-ws
+  template:
+    metadata:
+      labels:
+        app: mesh-node-ws
+    spec:
+      containers:
+        - name: node-ws
+          image: {{IMAGE_REPO}}/node-ws:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mesh-node-ws
+  namespace: mesh-node-ws-ns
+spec:
+  ports:
+    - port: 80
+      name: http
+  selector:
+    app: mesh-node-ws

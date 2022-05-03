@@ -1,8 +1,20 @@
+---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: mesh-node-ws
+  name: mesh-node-ws-ns
   labels:
-    mesh: mesh-node-ws
+    mesh: node-ws-mesh
     gateway: ingress-gw
     appmesh.k8s.aws/sidecarInjectorWebhook: enabled
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: Mesh
+metadata:
+  name: node-ws-mesh
+spec:
+  namespaceSelector:
+    matchLabels:
+      mesh: node-ws-mesh
+---
+    

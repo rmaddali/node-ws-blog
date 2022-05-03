@@ -1,0 +1,7 @@
+eksctl create iamserviceaccount \
+	--cluster ${CLUSTER_NAME} \
+	--namespace node-ws-ns  \
+	--name ${IAM_SA_NAME} \
+	--attach-policy-arn arn:aws:iam::aws:policy/AWSAppMeshEnvoyAccess \
+	--override-existing-serviceaccounts \
+	--approve; \
