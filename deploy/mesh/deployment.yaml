@@ -1,20 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mesh-node-ws
-  namespace: mesh-node-ws
+  name: node-ws
+  namespace: apps
+  labels:
+    app: node-ws
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: mesh-node-ws
+      app: node-ws
+      version: v1
   template:
     metadata:
       labels:
-        app: mesh-node-ws
+        app: node-ws
+        version: v1
+      annotations:
+        appmesh.k8s.aws/mesh: apps
     spec:
+      serviceAccountName: sa-envoy-access
       containers:
         - name: node-ws
-          image: rammaddali/node-ws:latest
+          image: 293014077452.dkr.ecr.us-east-2.amazonaws.com/node-ws:latest
           ports:
             - containerPort: 80

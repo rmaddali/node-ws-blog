@@ -1,11 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mesh-node-ws
-  namespace: mesh-node-ws
+  name: color-green
+  namespace: apps
+  labels:
+    app: node-ws
 spec:
   ports:
     - port: 80
       name: http
   selector:
-    app: mesh-node-ws
+    app: color
+    version: green

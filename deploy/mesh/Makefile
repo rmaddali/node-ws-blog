@@ -72,7 +72,7 @@ create-iam-sa: create-iam-policy
 	--cluster ${CLUSTER_NAME} \
 	--namespace appmesh-system  \
 	--name ${IAM_SA_NAME} \
-	--attach-policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/${POLICY_NAME}, arn:aws:iam::aws:policy/AWSCloudMapFullAccess, arn:aws:iam::aws:policy/AWSAppMeshFullAccess \
+	--attach-policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/${POLICY_NAME} \
 	--override-existing-serviceaccounts \
 	--approve; \
 	echo "created IAM Role = appmesh-controller"; \
